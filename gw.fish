@@ -1,0 +1,71 @@
+#!/usr/bin/env fish
+
+function _gw_print_help
+    echo "usage: $(_gw_bold "gw [COMMAND] [OPTIONS]")"
+    echo "       commands:"
+    echo "           $(_gw_bold ls), $(_gw_bold list): list all worktrees of current git repository"
+    echo "           $(_gw_bold a), $(_gw_bold add): add a new worktree to the current git repository"
+    echo "           $(_gw_bold rm), $(_gw_bold remove): remove a worktree from the current git repository and cd to default worktree"
+    echo "           $(_gw_bold doctor): health check"
+    echo ""
+    echo "       if no command is provided, switch to a worktree in current git repository using fzf prompt"
+    echo ""
+    echo "       options:"
+    echo "           -h, --help: show this message"
+end
+
+function _gw_bold
+    echo -e "\033[1m$argv\033[0m"
+end
+
+function main
+    argparse h/help -- $argv
+    or return
+
+    set -l cmd $argv[1]
+    set -l args $argv[2..-1]
+
+    # show help if cmd is not provided
+
+    if set -ql _flag_help -o "$cmd" = "h" -o "$cmd" = "help"
+        echo "simple and ergonomic wrapper around git worktree"
+        _gw_print_help
+        return 0
+    end
+
+    # list worktrees
+    if test "$cmd" = "ls" -o "$cmd" = "list"
+        source ./gw-ls.fish
+        gw-ls $args
+        return 0
+    end
+
+    # add worktree
+    if test "$cmd" = "a" -o "$cmd" = "add"
+        source ./gw-add.fish
+        gw-add $args
+        return 0
+    end
+
+    # remove worktree
+    if test "$cmd" = "rm" -o "$cmd" = "remove"
+        source ./gw-rm.fish
+        gw-rm $args
+        return 0
+    end
+
+    # doctor, health check
+    if test "$cmd" = "doctor"
+        source ./gw-doctor.fish
+        gw-doctor $args
+        return 0
+    end
+
+    # switch worktree
+    source ./gw-switch.fish
+    set -l args $argv[1..-1] # special case for gw-switch
+    gw-switch $args
+    return 0
+end
+
+main $argv

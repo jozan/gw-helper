@@ -1,0 +1,124 @@
+#!/usr/bin/env fish
+
+function _gw-rm_print_help
+    echo "usage: gw-rm [CURRENT_WORKTREE]"
+    echo "       if no argument is passed, fzf prompt will be shown to select a worktree to remove"
+    echo ""
+    echo "       CURRENT_WORKTREE: pass '.' to remove the current worktree"
+    echo "       options:"
+    echo "           -h, --help: show this message"
+end
+
+function _gw-rm_worktrees
+    set -l worktrees (\
+                        git worktree list --porcelain | \
+                        string split0 | \
+                        rg '^worktree' | \
+                        string split ' ' -f2\
+                     )
+    echo $worktrees
+end
+
+function _gw-rm_worktree_current_name
+    set -l current_worktree (path basename (pwd))
+
+    for worktree in (string split ' ' (_gw-rm_worktrees))
+        set -l worktree_name (path basename $worktree)
+        if test "$worktree_name" = "$current_worktree"
+            echo $worktree_name
+            break
+        end
+    end
+end
+
+function _gw-rm_worktree_default_path
+    set -l _D_ "+"
+    set -l current_worktree $argv[1]
+    set -l default_worktree (string split $_D_ $current_worktree -f1)
+
+    if test $default_worktree = $current_worktree
+        echo "___error_default_worktree"
+        return
+    end
+
+    for worktree in (string split ' ' (_gw-rm_worktrees))
+        set -l worktree_name (path basename $worktree)
+        if test $worktree_name = $default_worktree
+            echo $worktree
+            return
+        end
+    end
+
+    echo "___error_no_default_worktree_path_found"
+end
+
+function _gw-rm_handle_errors
+    set -l error $argv[1]
+
+    if test $error = "___error_default_worktree"
+        echo "Error: Default worktree cannot be deleted."
+        return 1
+    else if test $error = "___error_no_default_worktree_path_found"
+        echo "Error: No default worktree path found for current worktree"
+        return 1
+    end
+end
+
+function gw-rm
+    argparse h/help -- $argv
+    or return
+
+    if set -ql _flag_help
+        echo "remove a worktree from the current git repository and cd to default worktree"
+        _gw-rm_print_help
+        return 0
+    end
+
+    if test \( -n $argv[1] \) -a \( $argv[1] = '.' \)
+        set -l current_worktree (_gw-rm_worktree_current_name)
+        set -l default_worktree_path (_gw-rm_worktree_default_path $current_worktree)
+
+        _gw-rm_handle_errors $default_worktree_path
+        if test $status -ne 0
+            return 1
+        end
+
+        git worktree remove $current_worktree && cd $default_worktree_path
+    else
+        _gw-rm_remove_worktree_fzf
+    end
+end
+
+
+function _gw-rm_remove_worktree_fzf
+    set -l selected_worktree_path (\
+        git worktree list |\
+        fzf \
+            --preview='git log --oneline --decorate --color=always -n10 {2}' \
+            --preview-window='up' \
+            --prompt='remove worktree> ' |\
+        awk '{print $1}'\
+    )
+
+    if test -z $selected_worktree_path
+        echo "No worktree selected"
+        return
+    end
+
+    set -l selected_worktree (path basename $selected_worktree_path)
+    set -l default_worktree_path (_gw-rm_worktree_default_path $selected_worktree)
+
+    _gw-rm_handle_errors $default_worktree_path
+    if test $status -ne 0
+        return 1
+    end
+
+    # only switch to default worktree if the current worktree is removed
+    if test $selected_worktree = (_gw-rm_worktree_current_name)
+        echo "removed a seleceted worktree \"$selected_worktree\" and switched to default worktree \"$default_worktree_path\""
+        git worktree remove $selected_worktree && cd $default_worktree_path
+    else
+        echo "removed a selected worktree: $selected_worktree"
+        git worktree remove $selected_worktree
+    end
+end

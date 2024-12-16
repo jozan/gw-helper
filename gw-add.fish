@@ -1,0 +1,51 @@
+#!/usr/bin/env fish
+
+function _gw-add_print_help
+    echo "usage: gw-add WORKTREE_NAME [options]"
+    echo "       WORKTREE_NAME: name of a new worktree"
+    echo "       options:"
+    echo "           -h, --help: show this message"
+end
+
+function _gw-add_git_root
+    set -l root (git rev-parse --show-toplevel)
+    if test $status -ne 0
+        echo "error: not a git repository."
+        return 1
+    end
+    echo $root
+end
+
+function gw-add
+    argparse h/help -- $argv
+    or return
+
+    if set -ql _flag_help
+        echo "add a new worktree to the current git repository"
+        _gw-add_print_help
+        return 0
+    end
+
+    if not set -q argv[1]
+        echo "error: no path specified."
+        _gw-add_print_help
+        return 1
+    end
+
+    set -f _D_ "+"
+    set -l root (_gw-add_git_root)
+    set -l basename (path basename $root)
+
+    # basename can contain delimeter _D_ which is used to separate
+    # the root and the worktree name, we dont want to have multiple _D_
+    # in the worktree name so we second and after is replaced with
+    # a different delimeter
+    if string match -q "*$_D_*" $basename
+        set -f _D_ "_"
+    end
+
+    set -l worktree_name "$basename$_D_$argv[1]"
+
+    command git worktree add "$root/../$worktree_name" \
+            && cd "$root/../$worktree_name"
+end

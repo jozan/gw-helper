@@ -1,0 +1,20 @@
+#!/usr/bin/env fish
+
+function _gw-ls_print_help
+    echo "usage: gw-ls"
+    echo "       options:"
+    echo "           -h, --help: show this message"
+end
+
+function gw-ls
+    argparse h/help -- $argv
+    or return
+
+    if set -ql _flag_help
+        echo "list all worktrees of current git repository"
+        _gw-ls_print_help
+        return 0
+    end
+
+    command git worktree list $argv
+end
