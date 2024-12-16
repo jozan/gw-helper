@@ -1,0 +1,12 @@
+simple and ergonomic wrapper around git worktree
+usage: gw [COMMAND] [OPTIONS]
+       commands:
+           ls, list: list all worktrees of current git repository
+           a, add: add a new worktree to the current git repository
+           rm, remove: remove a worktree from the current git repository and cd to default worktree
+           doctor: health check
+
+       if no command is provided, switch to a worktree in current git repository using fzf prompt
+
+       options:
+           -h, --help: show this message
