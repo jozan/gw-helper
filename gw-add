@@ -7,15 +7,6 @@ function _gw-add_print_help
     echo "           -h, --help: show this message"
 end
 
-function _gw-add_git_root
-    set -l root (git rev-parse --show-toplevel)
-    if test $status -ne 0
-        echo "error: not a git repository."
-        return 1
-    end
-    echo $root
-end
-
 function gw-add
     argparse h/help -- $argv
     or return
@@ -49,3 +40,16 @@ function gw-add
     command git worktree add "$root/../$worktree_name" \
             && cd "$root/../$worktree_name"
 end
+
+function _gw-add_git_root
+    set -l root (git rev-parse --show-toplevel)
+    if test $status -ne 0
+        echo "error: not a git repository."
+        return 1
+    end
+    echo $root
+end
+
+gw-add $argv
+
+# vim: set ft=fish

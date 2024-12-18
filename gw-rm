@@ -9,6 +9,31 @@ function _gw-rm_print_help
     echo "           -h, --help: show this message"
 end
 
+function gw-rm
+    argparse h/help -- $argv
+    or return
+
+    if set -ql _flag_help
+        echo "remove a worktree from the current git repository and cd to default worktree"
+        _gw-rm_print_help
+        return 0
+    end
+
+    if test \( -n $argv[1] \) -a \( $argv[1] = '.' \)
+        set -l current_worktree (_gw-rm_worktree_current_name)
+        set -l default_worktree_path (_gw-rm_worktree_default_path $current_worktree)
+
+        _gw-rm_handle_errors $default_worktree_path
+        if test $status -ne 0
+            return 1
+        end
+
+        git worktree remove $current_worktree && cd $default_worktree_path
+    else
+        _gw-rm_remove_worktree_fzf
+    end
+end
+
 function _gw-rm_worktrees
     set -l worktrees (\
                         git worktree list --porcelain | \
@@ -64,32 +89,6 @@ function _gw-rm_handle_errors
     end
 end
 
-function gw-rm
-    argparse h/help -- $argv
-    or return
-
-    if set -ql _flag_help
-        echo "remove a worktree from the current git repository and cd to default worktree"
-        _gw-rm_print_help
-        return 0
-    end
-
-    if test \( -n $argv[1] \) -a \( $argv[1] = '.' \)
-        set -l current_worktree (_gw-rm_worktree_current_name)
-        set -l default_worktree_path (_gw-rm_worktree_default_path $current_worktree)
-
-        _gw-rm_handle_errors $default_worktree_path
-        if test $status -ne 0
-            return 1
-        end
-
-        git worktree remove $current_worktree && cd $default_worktree_path
-    else
-        _gw-rm_remove_worktree_fzf
-    end
-end
-
-
 function _gw-rm_remove_worktree_fzf
     set -l selected_worktree_path (\
         git worktree list |\
@@ -122,3 +121,7 @@ function _gw-rm_remove_worktree_fzf
         git worktree remove $selected_worktree
     end
 end
+
+gw-rm $argv
+
+# vim: set ft=fish

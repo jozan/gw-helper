@@ -35,37 +35,34 @@ function main
 
     # list worktrees
     if test "$cmd" = "ls" -o "$cmd" = "list"
-        source ./gw-ls.fish
-        gw-ls $args
+        ./gw-ls $args
         return 0
     end
 
     # add worktree
     if test "$cmd" = "a" -o "$cmd" = "add"
-        source ./gw-add.fish
         gw-add $args
         return 0
     end
 
     # remove worktree
     if test "$cmd" = "rm" -o "$cmd" = "remove"
-        source ./gw-rm.fish
         gw-rm $args
         return 0
     end
 
     # doctor, health check
     if test "$cmd" = "doctor"
-        source ./gw-doctor.fish
         gw-doctor $args
         return 0
     end
 
     # switch worktree
-    source ./gw-switch.fish
     set -l args $argv[1..-1] # special case for gw-switch
     gw-switch $args
     return 0
 end
 
 main $argv
+
+# vim: set ft=fish
