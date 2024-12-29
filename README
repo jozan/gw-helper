@@ -10,3 +10,20 @@ usage: gw [COMMAND] [OPTIONS]
 
        options:
            -h, --help: show this message
+
+
+how to install:
+make sure you have these installed
+  - fish (v3.7.1 or v4.0b1, likely to work with v4.x)
+  - git
+  - fzf
+  - awk
+  - rg (ripgrep)
+  - make (optional but needed for the next step)
+
+clone the repo locally and run
+$ make install
+
+
+how to uninstall:
+$ make uninstall
