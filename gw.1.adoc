@@ -1,0 +1,52 @@
+= gw(1)
+:mansource: 1.0
+// author
+https://github.com/jozan
+
+== NAME
+
+gw - simple and ergonomic wrapper around git worktree
+
+== SYNOPSIS
+
+[verse]
+
+____
+*gw*          switch to the worktree (opens fzf)
+*gw a*        add a new worktree
+*gw doctor*   check if the worktree is healthy
+*gw ls*       list worktrees
+*gw rm*       remove a worktree (opens fzf)
+____
+
+
+== DESCRIPTION
+
+*gw* makes it easier to work with git worktrees by providing quickly
+creating, deleting and listing git worktrees.
+
+ergonomics come from the fact that *gw* will *cd* into the worktree
+with best effort which is useful for quickly switching between worktrees.
+when deleting a worktree *gw rm* will also clean up the created
+directories and files.
+
+== REPORTING BUGS
+
+you can report bugs at <https://github.com/jozan/gw-helper>
+
+== COPYRIGHT
+
+Copyright (C) 2024  jozan
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
